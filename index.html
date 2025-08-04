@@ -1,0 +1,501 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Radio – Neo Player</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+
+<style>
+  :root{
+    --bg: hsl(220, 10%, 8%);           /* fondo base negro muy oscuro */
+    --card: hsl(220, 10%, 12%);         /* fondo tarjeta oscuro */
+    --text: hsl(220, 20%, 85%);         /* texto claro */
+    --soft-shadow: hsl(220, 10%, 15%);  /* Sombra clara para efecto elevado */
+    --hard-shadow: hsl(220, 10%, 5%);  /* Sombra oscura para efecto elevado */
+    --accent: hsl(35, 90%, 55%);       /* acento naranja-amarillo vibrante para Radio Kedada */
+    --accent-2: hsl(150, 60%, 50%);      /* verde para LIVE */
+    --yellow-text: hsl(45, 100%, 60%);  /* Color amarillo para el título principal */
+  }
+
+  /* Reset breve */
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0;
+    font-family:"Poppins", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    color:var(--text);
+    /* Fondo negro sólido */
+    background: var(--bg);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:15px;
+  }
+
+  .wrap{
+    width:min(700px, 100%);
+  }
+
+  /* Tarjeta neumórfica */
+  .card{
+    background:var(--card);
+    border-radius:20px;
+    padding:20px;
+    box-shadow:
+      -8px -8px 18px var(--soft-shadow),
+      8px 8px 18px var(--hard-shadow);
+  }
+
+  .top{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-bottom:12px;
+    flex-wrap:wrap;
+  }
+
+  .live{
+    display:inline-flex; align-items:center; gap:6px;
+    padding:6px 10px;
+    border-radius:999px;
+    /* Ajuste para modo oscuro */
+    background:linear-gradient(180deg, var(--card), hsl(220, 10%, 10%));
+    /* Ahora también elevado por defecto */
+    box-shadow: -4px -4px 8px var(--soft-shadow), 4px 4px 8px var(--hard-shadow);
+    font-size:.75rem;
+    font-weight:600;
+  }
+  .live-dot{
+    width:8px; height:8px; border-radius:50%;
+    background:var(--accent-2);
+    box-shadow:0 0 0 4px hsla(150, 60%, 50%,.15);
+    animation:pulse 1.6s infinite;
+  }
+  @keyframes pulse{
+    0%{box-shadow:0 0 0 0 hsla(150, 60%, 50%,.35)}
+    70%{box-shadow:0 0 0 8px hsla(150, 60%, 50%,0)}
+    100%{box-shadow:0 0 0 0 hsla(150, 60%, 50%,0)}
+  }
+
+  .title{
+    font-weight:700; font-size:1.15rem;
+    letter-spacing:.1px;
+    display:flex; align-items:center; gap:8px;
+    color: var(--yellow-text);
+  }
+
+  .subtitle{
+    font-size:.8rem; opacity:.8;
+    margin-top:-2px;
+    line-height: 1.5;
+  }
+
+  /* Contenedor del reproductor embebido (este sí debe verse hundido) */
+  .player-shell{
+    margin-top:12px;
+    border-radius:18px;
+    padding:14px;
+    background:var(--card);
+    box-shadow:
+      inset -8px -8px 14px var(--soft-shadow),
+      inset 8px 8px 14px var(--hard-shadow);
+  }
+
+  /* Forzamos que el iframe del player ocupe todo el ancho */
+  .player-shell .cc_player{
+    width:100% !important;
+  }
+  .player-shell iframe{
+    width:100% !important;
+    max-width:100% !important;
+    border:0;
+    border-radius:10px;
+    overflow:hidden;
+  }
+
+  /* Now playing (este debe verse elevado) */
+  .now-playing{
+    margin-top:16px;
+    display:flex;
+    align-items:center;
+    justify-content: flex-start; /* CAMBIO: Alinea los elementos al inicio */
+    gap:10px;
+    flex-wrap:nowrap; /* Evita que los elementos se envuelvan */
+    padding:12px 14px;
+    border-radius:14px;
+    background:var(--card);
+    box-shadow:
+      -6px -6px 12px var(--soft-shadow),
+      6px 6px 12px var(--hard-shadow);
+  }
+
+  .now-playing-info {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      flex-grow: 1;
+      flex-shrink: 1;
+      min-width: 0;
+  }
+
+  .eq{
+    display:inline-flex; gap:3px; height:14px; align-items:flex-end;
+  }
+  .bar{
+    width:2px; border-radius:1px; background:var(--accent);
+    animation: bounce 1s infinite ease-in-out;
+  }
+  .bar:nth-child(2){animation-delay:.1s}
+  .bar:nth-child(3){animation-delay:.2s}
+  .bar:nth-child(4){animation-delay:.3s}
+  .bar:nth-child(5){animation-delay:.4s}
+  @keyframes bounce{
+    0%,100%{height:4px}
+    50%{height:14px}
+  }
+  .song{
+    font-weight:600;
+    letter-spacing:.1px;
+    font-size: .9rem;
+    display: flex;
+    align-items: baseline;
+    flex-grow: 1;
+    min-width: 0;
+  }
+
+  .song > span:first-child {
+      flex-shrink: 0;
+      margin-right: 4px;
+      color: var(--yellow-text);
+  }
+
+  .song-text-wrapper {
+      flex-grow: 1;
+      overflow: hidden;
+      white-space: nowrap;
+      position: relative;
+  }
+
+  .song-text-inner {
+      display: inline-block;
+      white-space: nowrap;
+      /* Animación aplicada por JavaScript */
+  }
+
+  @keyframes marquee {
+    from { transform: translateX(0%); }
+    to { transform: translateX(-100%); } /* Desplaza el 100% de su propio ancho */
+  }
+
+  .hint{
+    font-size:.75rem;
+    opacity:.7;
+  }
+
+  /* Estilos para la carátula del álbum - Ahora es un div con background-image */
+  .album-art {
+      width: 60px;
+      height: 60px;
+      border-radius: 10px;
+      object-fit: cover; /* Aunque es un div, mantenemos por si se cambia a img */
+      flex-shrink: 0;
+      background-image: url('https://i.postimg.cc/PJZfpMfh/caraturaa-Kedada-Musical-500x500.jpg'); /* Imagen de respaldo por defecto */
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+  }
+
+  /* Botones neumórficos */
+  .actions{
+    margin-top:12px;
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    align-items: center;
+    justify-content: flex-start;
+  }
+  .btn{
+    appearance:none; border:0; cursor:pointer;
+    padding:10px 14px;
+    border-radius:12px;
+    background:var(--card); color:var(--text); font-weight:600;
+    box-shadow:
+      -6px -6px 12px var(--soft-shadow),
+      6px 6px 12px var(--hard-shadow);
+    transition: transform .08s ease, box-shadow .2s ease;
+    font-size: .85rem;
+  }
+  .btn:active{
+    transform: translateY(1px);
+    box-shadow:
+      inset -6px -6px 12px var(--hard-shadow),
+      inset 6px 6px 12px var(--soft-shadow);
+  }
+
+  .hidden {
+      display: none;
+  }
+
+  /* Responsivo - Ajustes para tamaños más pequeños */
+  @media (max-width:768px){
+    .wrap{
+      width:min(600px, 100%);
+    }
+    .card{
+      padding:18px;
+    }
+    .title{font-size:1.05rem}
+    .subtitle{font-size:.75rem}
+    .now-playing {
+        flex-direction: row; /* Aseguramos que sea fila en pantallas medianas */
+        align-items: center;
+        justify-content: flex-start; /* CAMBIO: Alinea los elementos al inicio */
+        gap: 10px;
+        padding:10px 12px;
+        flex-wrap: nowrap; /* Evita que los elementos se envuelvan en 768px */
+    }
+    .album-art {
+        margin-top: 0;
+        width: 60px;
+        height: 60px;
+    }
+    .now-playing-info {
+        align-items: flex-start;
+        text-align: left;
+        gap: 6px;
+    }
+    .song {
+        font-size: .85rem;
+        min-width: unset;
+    }
+    .song > span:first-child {
+      margin-right: 3px;
+    }
+    .song-text-wrapper {
+        max-width: 100%;
+    }
+    .hint{
+        font-size:.7rem;
+    }
+    .actions {
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+    }
+    .btn {
+        padding: 8px 12px;
+        font-size: .8rem;
+    }
+  }
+
+  @media (max-width:520px){
+    .wrap{
+      padding:0;
+    }
+    .card{
+      border-radius:15px;
+      padding:15px;
+    }
+    .top{
+      gap:8px;
+      margin-bottom:10px;
+    }
+    .live{
+      padding:5px 8px;
+      font-size:.7rem;
+    }
+    .live-dot{
+      width:7px; height:7px;
+    }
+    .title{font-size:1rem}
+    .subtitle{font-size:.7rem}
+    .player-shell{
+      margin-top:10px;
+      border-radius:15px;
+      padding:10px;
+    }
+    .now-playing{
+      margin-top:12px;
+      padding:8px 10px;
+      flex-direction: row;
+      justify-content: flex-start; /* CAMBIO: Alinea los elementos al inicio */
+      align-items: center;
+      flex-wrap: nowrap;
+    }
+    .album-art {
+        width: 60px;
+        height: 60px;
+        border-radius: 8px;
+        margin-top: 0;
+    }
+    .song {
+        font-size: .8rem;
+    }
+    .hint{
+        font-size:.65rem;
+    }
+    .actions {
+        gap: 6px;
+    }
+    .btn {
+        padding: 7px 10px;
+        font-size: .75rem;
+    }
+  }
+</style>
+</head>
+<body>
+
+  <main class="wrap">
+    <section class="card" aria-label="Reproductor de radio">
+      <div class="top">
+        <span class="live"><span class="live-dot"></span> LIVE</span>
+        <div>
+          <div class="title">Radio Kedada</div>
+          <div class="subtitle">Emitiendo 24/7 – Calidad HD</div>
+        </div>
+      </div>
+
+      <!-- Contenedor visual del reproductor -->
+      <div class="player-shell">
+        <div class="cc_player" data-username="xpnnzdxr" data-size="sm" data-style="dark">Cargando ...</div>
+      </div>
+
+      <!-- Now Playing -->
+      <div class="now-playing" aria-live="polite">
+        <!-- Carátula del álbum - Ahora es un div con background-image -->
+        <div id="albumArtElement" class="album-art"></div>
+        <div class="now-playing-info">
+            <div class="eq" aria-hidden="true">
+              <span class="bar"></span><span class="bar"></span><span class="bar"></span><span class="bar"></span><span class="bar"></span>
+            </div>
+            <div class="song">
+              <span>Ahora suena:</span>
+              <div class="song-text-wrapper">
+                <span id="songTitleElement" class="song-text-inner cc_streaminfo" data-type="song" data-username="xpnnzdxr">Cargando ...</span>
+              </div>
+            </div>
+            <div class="hint">Si no ves el reproductor, desactiva bloqueadores o recarga la página.</div>
+        </div>
+      </div>
+
+      <!-- Acciones opcionales -->
+      <div class="actions">
+        <button class="btn" onclick="window.open(window.location.href,'_self')">Recargar</button>
+        <button class="btn" onclick="window.open('https://kddmusical.radio12345.com/', '_blank')">
+          2º RADIO
+        </button>
+        <button class="btn" onclick="window.open('https://us5new.listen2myradio.com:2199/tunein/xpnnzdxr.pls')">
+          Abrir en app (PLS)
+        </button>
+      </div>
+    </section>
+  </main>
+
+  <!-- Scripts de Listen2MyRadio (cargan el player y la info de la canción) -->
+  <script src="https://us5new.listen2myradio.com:2199/system/player.js"></script>
+  <script src="https://us5new.listen2myradio.com:2199/system/streaminfo.js"></script>
+
+  <script type="module">
+    // Firebase imports (boilerplate obligatorio)
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getFirestore } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+    // Variables globales (boilerplate obligatorio)
+    const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+    const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
+    const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null; 
+
+    let app, db, auth;
+
+    async function initializeFirebase() {
+        try {
+            app = initializeApp(firebaseConfig);
+            db = getFirestore(app);
+            auth = getAuth(app);
+
+            if (initialAuthToken) {
+                await signInWithCustomToken(auth, initialAuthToken);
+            } else {
+                await signInAnonymously(auth);
+            }
+            console.log("Firebase inicializado y usuario autenticado.");
+        } catch (error) {
+            console.error("Error al inicializar Firebase o autenticar:", error);
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', async () => {
+        await initializeFirebase();
+
+        const songTextWrapper = document.querySelector('.song-text-wrapper');
+        const songTextInner = songTextWrapper ? songTextWrapper.querySelector('.song-text-inner.cc_streaminfo[data-type="song"]') : null;
+        const albumArtElement = document.getElementById('albumArtElement'); // Nuestro nuevo div para la carátula
+        const trackImageUrlElement = document.querySelector('.cc_streaminfo[data-type="trackimageurl"]'); // El elemento oculto que proporciona la URL de la carátula
+
+        // Lógica de desplazamiento (marquee)
+        if (songTextInner && songTextWrapper) {
+            const checkMarquee = () => {
+                songTextInner.style.animation = 'none'; // Detener animación existente
+                songTextInner.style.transform = 'translateX(0)'; // Resetear posición
+                requestAnimationFrame(() => {
+                    const wrapperWidth = songTextWrapper.offsetWidth;
+                    const contentWidth = songTextInner.scrollWidth;
+                    
+                    if (contentWidth > wrapperWidth) {
+                        // Duración fija para una velocidad constante
+                        const duration = contentWidth / 30; // Ajusta el '30' para controlar la velocidad
+                        songTextInner.style.animation = `marquee ${duration}s linear infinite`;
+                    } else {
+                        songTextInner.style.animation = 'none'; // No hay necesidad de animar si el texto cabe
+                    }
+                });
+            };
+
+            // Observar cambios en el contenido del título de la canción
+            const songTitleObserver = new MutationObserver(checkMarquee);
+            songTitleObserver.observe(songTextInner, { childList: true, characterData: true, subtree: true });
+            
+            // Re-evaluar el marquee al cargar y al redimensionar la ventana
+            checkMarquee(); // Llamada inicial
+            window.addEventListener('resize', checkMarquee);
+        }
+
+        // Lógica para la carátula del álbum
+        if (albumArtElement && trackImageUrlElement) {
+            const defaultAlbumArtUrl = 'https://i.postimg.cc/PJZfpMfh/caraturaa-Kedada-Musical-500x500.jpg'; // Tu URL de respaldo
+
+            // Función para actualizar la carátula
+            const updateAlbumArt = (imageUrl) => {
+                if (imageUrl && imageUrl.trim() !== '' && imageUrl !== 'https://placehold.co/80x80/222222/bbbbbb?text=NO+IMAGE' && imageUrl !== 'https://placehold.co/60x60/222222/bbbbbb?text=RADIO') {
+                    // Si hay una URL válida y no es una de nuestras URL de marcador de posición, úsala
+                    albumArtElement.style.backgroundImage = `url('${imageUrl}')`;
+                } else {
+                    // Si la URL es vacía, nula o una de nuestras URL de marcador de posición, usa la de respaldo
+                    albumArtElement.style.backgroundImage = `url('${defaultAlbumArtUrl}')`;
+                }
+            };
+
+            // Observar cambios en el textContent del elemento que proporciona la URL de la carátula
+            const albumArtObserver = new MutationObserver((mutationsList) => {
+                for (const mutation of mutationsList) {
+                    if (mutation.type === 'characterData' || mutation.type === 'childList') {
+                        const newImageUrl = trackImageUrlElement.textContent.trim();
+                        updateAlbumArt(newImageUrl);
+                    }
+                }
+            });
+
+            // Iniciar la observación del elemento que proporciona la URL de la carátula
+            albumArtObserver.observe(trackImageUrlElement, { childList: true, characterData: true, subtree: true });
+
+            // Llamada inicial para establecer la carátula al cargar la página
+            updateAlbumArt(trackImageUrlElement.textContent.trim());
+        }
+    });
+</script>
+</body>
+</html>
