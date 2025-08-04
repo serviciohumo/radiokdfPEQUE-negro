@@ -9,11 +9,11 @@
 
 <style>
   :root{
-    --bg: hsl(220, 20%, 15%);           /* fondo base oscuro - RESTAURADO */
-    --card: hsl(220, 20%, 20%);         /* fondo tarjeta oscuro - RESTAURADO */
+    --bg: hsl(220, 20%, 15%);           /* fondo base negro muy oscuro */
+    --card: hsl(220, 20%, 20%);         /* fondo tarjeta oscuro */
     --text: hsl(220, 20%, 85%);         /* texto claro */
-    --soft-shadow: hsl(220, 20%, 25%);  /* Sombra clara para efecto elevado - RESTAURADO */
-    --hard-shadow: hsl(220, 20%, 10%);  /* Sombra oscura para efecto elevado - RESTAURADO */
+    --soft-shadow: hsl(220, 20%, 25%);  /* Sombra clara para efecto elevado */
+    --hard-shadow: hsl(220, 20%, 10%);  /* Sombra oscura para efecto elevado */
     --accent: hsl(35, 90%, 55%);       /* acento naranja-amarillo vibrante para Radio Kedada */
     --accent-2: hsl(150, 60%, 50%);      /* verde para LIVE */
     --yellow-text: hsl(45, 100%, 60%);  /* Color amarillo para el título principal */
@@ -26,8 +26,8 @@
     margin:0;
     font-family:"Poppins", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
     color:var(--text);
-    /* Fondo con gradiente radial y sutil textura - RESTAURADO */
-    background: radial-gradient(1200px 1200px at 10% -10%, hsl(220, 20%, 25%) 10%, var(--bg) 60%), var(--bg);
+    /* Fondo negro sólido */
+    background: var(--bg);
     display:flex;
     align-items:center;
     justify-content:center;
@@ -60,8 +60,8 @@
     display:inline-flex; align-items:center; gap:6px;
     padding:6px 10px;
     border-radius:999px;
-    /* Ajuste para modo oscuro - RESTAURADO */
-    background:linear-gradient(180deg, var(--card), hsl(220, 20%, 18%));
+    /* Ajuste para modo oscuro */
+    background:linear-gradient(180deg, var(--card), hsl(220, 10%, 10%));
     /* Ahora también elevado por defecto */
     box-shadow: -4px -4px 8px var(--soft-shadow), 4px 4px 8px var(--hard-shadow);
     font-size:.75rem;
@@ -120,9 +120,9 @@
     margin-top:16px;
     display:flex;
     align-items:center;
-    justify-content: flex-start;
+    justify-content: flex-start; /* CAMBIO: Alinea los elementos al inicio */
     gap:10px;
-    flex-wrap:nowrap;
+    flex-wrap:nowrap; /* Evita que los elementos se envuelvan */
     padding:12px 14px;
     border-radius:14px;
     background:var(--card);
@@ -249,12 +249,12 @@
     .title{font-size:1.05rem}
     .subtitle{font-size:.75rem}
     .now-playing {
-        flex-direction: row;
+        flex-direction: row; /* Aseguramos que sea fila en pantallas medianas */
         align-items: center;
-        justify-content: flex-start;
+        justify-content: flex-start; /* CAMBIO: Alinea los elementos al inicio */
         gap: 10px;
         padding:10px 12px;
-        flex-wrap: nowrap;
+        flex-wrap: nowrap; /* Evita que los elementos se envuelvan en 768px */
     }
     .album-art {
         margin-top: 0;
@@ -320,7 +320,7 @@
       margin-top:12px;
       padding:8px 10px;
       flex-direction: row;
-      justify-content: flex-start;
+      justify-content: flex-start; /* CAMBIO: Alinea los elementos al inicio */
       align-items: center;
       flex-wrap: nowrap;
     }
@@ -433,46 +433,53 @@
 
         const songTextWrapper = document.querySelector('.song-text-wrapper');
         const songTextInner = songTextWrapper ? songTextWrapper.querySelector('.song-text-inner.cc_streaminfo[data-type="song"]') : null;
-        const albumArtElement = document.getElementById('albumArtElement');
-        const trackImageUrlElement = document.querySelector('.cc_streaminfo[data-type="trackimageurl"]');
+        const albumArtElement = document.getElementById('albumArtElement'); // Nuestro nuevo div para la carátula
+        const trackImageUrlElement = document.querySelector('.cc_streaminfo[data-type="trackimageurl"]'); // El elemento oculto que proporciona la URL de la carátula
 
         // Lógica de desplazamiento (marquee)
         if (songTextInner && songTextWrapper) {
             const checkMarquee = () => {
-                songTextInner.style.animation = 'none';
-                songTextInner.style.transform = 'translateX(0)';
+                songTextInner.style.animation = 'none'; // Detener animación existente
+                songTextInner.style.transform = 'translateX(0)'; // Resetear posición
                 requestAnimationFrame(() => {
                     const wrapperWidth = songTextWrapper.offsetWidth;
                     const contentWidth = songTextInner.scrollWidth;
                     
                     if (contentWidth > wrapperWidth) {
-                        const duration = contentWidth / 30;
+                        // Duración fija para una velocidad constante
+                        const duration = contentWidth / 30; // Ajusta el '30' para controlar la velocidad
                         songTextInner.style.animation = `marquee ${duration}s linear infinite`;
                     } else {
-                        songTextInner.style.animation = 'none';
+                        songTextInner.style.animation = 'none'; // No hay necesidad de animar si el texto cabe
                     }
                 });
             };
 
+            // Observar cambios en el contenido del título de la canción
             const songTitleObserver = new MutationObserver(checkMarquee);
             songTitleObserver.observe(songTextInner, { childList: true, characterData: true, subtree: true });
             
-            checkMarquee();
+            // Re-evaluar el marquee al cargar y al redimensionar la ventana
+            checkMarquee(); // Llamada inicial
             window.addEventListener('resize', checkMarquee);
         }
 
         // Lógica para la carátula del álbum
         if (albumArtElement && trackImageUrlElement) {
-            const defaultAlbumArtUrl = 'https://i.postimg.cc/PJZfpMfh/caraturaa-Kedada-Musical-500x500.jpg';
+            const defaultAlbumArtUrl = 'https://i.postimg.cc/PJZfpMfh/caraturaa-Kedada-Musical-500x500.jpg'; // Tu URL de respaldo
 
+            // Función para actualizar la carátula
             const updateAlbumArt = (imageUrl) => {
                 if (imageUrl && imageUrl.trim() !== '' && imageUrl !== 'https://placehold.co/80x80/222222/bbbbbb?text=NO+IMAGE' && imageUrl !== 'https://placehold.co/60x60/222222/bbbbbb?text=RADIO') {
+                    // Si hay una URL válida y no es una de nuestras URL de marcador de posición, úsala
                     albumArtElement.style.backgroundImage = `url('${imageUrl}')`;
                 } else {
+                    // Si la URL es vacía, nula o una de nuestras URL de marcador de posición, usa la de respaldo
                     albumArtElement.style.backgroundImage = `url('${defaultAlbumArtUrl}')`;
                 }
             };
 
+            // Observar cambios en el textContent del elemento que proporciona la URL de la carátula
             const albumArtObserver = new MutationObserver((mutationsList) => {
                 for (const mutation of mutationsList) {
                     if (mutation.type === 'characterData' || mutation.type === 'childList') {
@@ -482,8 +489,10 @@
                 }
             });
 
+            // Iniciar la observación del elemento que proporciona la URL de la carátula
             albumArtObserver.observe(trackImageUrlElement, { childList: true, characterData: true, subtree: true });
 
+            // Llamada inicial para establecer la carátula al cargar la página
             updateAlbumArt(trackImageUrlElement.textContent.trim());
         }
     });
